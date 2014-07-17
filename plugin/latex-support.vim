@@ -1199,7 +1199,7 @@ function! Latex_View ( format )
 		return
 	endif
 
-  let targetformat   = expand("%:r").'.'.fmt
+  let targetformat   = expand("%:t:r").'.'.fmt
 	if !filereadable( targetformat )
 		if filereadable( expand("%:r").'.dvi' )
 			call Latex_Conversions( 'dvi-'.fmt )
