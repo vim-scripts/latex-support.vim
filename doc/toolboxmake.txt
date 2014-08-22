@@ -1,8 +1,8 @@
-*toolboxmake.txt*                  Make Tool                       Dec 28 2013
+*toolboxmake.txt*                  Make Tool                       Aug 07 2014
 
 Make Tool                                                       *toolbox-make*
 
-                            Plug-in version 1.0.1
+                            Plug-in version 1.0.2
                         for Vim version 7.0 and above
                  Wolfgang Mehner <wolfgang-mehner at web.de>
 
@@ -120,7 +120,7 @@ The Makefile and command-line arguments can be set via an API. This allows for
 setting up the configuration via a script.
 
 ------------------------------------------------------------------------------
-                                                     *mmtoolbox#make#Property*
+                                                   *mmtoolbox#make#Property()*
 The Makefile and command-line arguments can be set using:
 
   mmtoolbox#make#Property ( mode, key [, value] ) ~
@@ -166,6 +166,12 @@ The executable is set by g:Make_Executable: >
 ==============================================================================
 A.  CHANGE LOG                                       *toolbox-make-change-log*
 ==============================================================================
+
+------------------------------------------------------------------------------
+  RELEASE NOTES FOR VERSION 1.0.2
+------------------------------------------------------------------------------
+
+- Minor changes.
 
 ------------------------------------------------------------------------------
   RELEASE NOTES FOR VERSION 1.0.1

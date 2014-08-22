@@ -35,7 +35,7 @@ if exists("g:LatexSupportVersion") || &cp
  finish
 endif
 "
-let g:LatexSupportVersion= "1.1"                  " version number of this script; do not change
+let g:LatexSupportVersion= "1.1.1"                  " version number of this script; do not change
 "
 "===  FUNCTION  ================================================================
 "          NAME:  latex_SetGlobalVariable     {{{1
@@ -76,9 +76,7 @@ let s:UNIX	= has("unix")  || has("macunix") || has("win32unix")
 "
 let s:installation							= '*undefined*'
 let s:Latex_GlobalTemplateFile	= ''
-let s:Latex_GlobalTemplateDir		= ''
 let s:Latex_LocalTemplateFile		= ''
-let s:Latex_LocalTemplateDir		= ''
 let s:Latex_FilenameEscChar 		= ''
 
 let s:Latex_Typesetter	= 'pdflatex'
@@ -107,25 +105,22 @@ if	s:MSWIN
 	let s:Latex_PdfPng      = ''
 	let s:Latex_PsPdf       = 'ps2pdf.exe'
 	"
+	let s:plugin_dir = substitute( expand('<sfile>:p:h:h'), '\', '/', 'g' )
+	"
 	" change '\' to '/' to avoid interpretation as escape character
 	if match(	substitute( expand("<sfile>"), '\', '/', 'g' ),
 				\		substitute( expand("$HOME"),   '\', '/', 'g' ) ) == 0
 		"
 		" USER INSTALLATION ASSUMED
 		let s:installation					= 'local'
-		let s:plugin_dir  					= substitute( expand('<sfile>:p:h:h'), '\', '/', 'g' )
 		let s:Latex_LocalTemplateFile	= s:plugin_dir.'/latex-support/templates/Templates'
-		let s:Latex_LocalTemplateDir	= fnamemodify( s:Latex_LocalTemplateFile, ":p:h" ).'/'
 		let s:Latex_ToolboxDir			 += [ s:plugin_dir.'/autoload/mmtoolbox/' ]
 	else
 		"
 		" SYSTEM WIDE INSTALLATION
 		let s:installation					= 'system'
-		let s:plugin_dir						= $VIM.'/vimfiles'
-		let s:Latex_GlobalTemplateDir	= s:plugin_dir.'/latex-support/templates'
-		let s:Latex_GlobalTemplateFile= s:Latex_GlobalTemplateDir.'/Templates'
+		let s:Latex_GlobalTemplateFile= s:plugin_dir.'/latex-support/templates/Templates'
 		let s:Latex_LocalTemplateFile	= $HOME.'/vimfiles/latex-support/templates/Templates'
-		let s:Latex_LocalTemplateDir	= fnamemodify( s:Latex_LocalTemplateFile, ":p:h" ).'/'
 		let s:Latex_ToolboxDir			 += [
 					\	s:plugin_dir.'/autoload/mmtoolbox/',
 					\	$HOME.'/vimfiles/autoload/mmtoolbox/' ]
@@ -155,23 +150,20 @@ else
 	let s:Latex_PdfPng      = 'convert'
 	let s:Latex_PsPdf       = 'ps2pdf'
 	"
+	let s:plugin_dir = expand('<sfile>:p:h:h')
+	"
 	if match( expand("<sfile>"), resolve( expand("$HOME") ) ) == 0
 		"
 		" USER INSTALLATION ASSUMED
 		let s:installation					= 'local'
-		let s:plugin_dir 						= expand('<sfile>:p:h:h')
 		let s:Latex_LocalTemplateFile	= s:plugin_dir.'/latex-support/templates/Templates'
-		let s:Latex_LocalTemplateDir	= fnamemodify( s:Latex_LocalTemplateFile, ":p:h" ).'/'
 		let s:Latex_ToolboxDir			 += [ s:plugin_dir.'/autoload/mmtoolbox/' ]
 	else
 		"
 		" SYSTEM WIDE INSTALLATION
 		let s:installation					= 'system'
-		let s:plugin_dir						= $VIM.'/vimfiles'
-		let s:Latex_GlobalTemplateDir	= s:plugin_dir.'/latex-support/templates'
-		let s:Latex_GlobalTemplateFile= s:Latex_GlobalTemplateDir.'/Templates'
+		let s:Latex_GlobalTemplateFile= s:plugin_dir.'/latex-support/templates/Templates'
 		let s:Latex_LocalTemplateFile	= $HOME.'/.vim/latex-support/templates/Templates'
-		let s:Latex_LocalTemplateDir	= fnamemodify( s:Latex_LocalTemplateFile, ":p:h" ).'/'
 		let s:Latex_ToolboxDir			 += [
 					\	s:plugin_dir.'/autoload/mmtoolbox/',
 					\	$HOME.'/.vim/autoload/mmtoolbox/' ]
@@ -370,19 +362,19 @@ function! Latex_AdjustLineEndComm ( ) range
 				let	diff	= b:Latex_LineEndCommentColumn-vpos2
 				call setpos('.', [ 0, ln, vpos2, 0 ] )
 				let	@"	= ' '
-				exe 'normal	'.diff.'P'
+				exe 'normal!	'.diff.'P'
 			end
 
 			" remove some spaces
 			if vpos1 < b:Latex_LineEndCommentColumn && vpos2 > b:Latex_LineEndCommentColumn
 				let	diff	= vpos2 - b:Latex_LineEndCommentColumn
 				call setpos('.', [ 0, ln, b:Latex_LineEndCommentColumn, 0 ] )
-				exe 'normal	'.diff.'x'
+				exe 'normal!	'.diff.'x'
 			end
 
 		end
 		let linenumber=linenumber+1
-		normal j
+		normal! j
 	endwhile
 	" restore tab expansion settings and cursor position
 	let &expandtab	= save_expandtab
@@ -430,7 +422,7 @@ function! Latex_EndOfLineComment ( ) range
 			if linelength < b:Latex_LineEndCommentColumn
 				let diff	= b:Latex_LineEndCommentColumn -1 -linelength
 			endif
-			exe "normal	".diff."A "
+			exe "normal!	".diff."A "
 			call mmtemplates#core#InsertTemplate(g:Latex_Templates, 'Comments.end-of-line comment')
 		endif
 	endfor
@@ -457,6 +449,29 @@ function! Latex_CommentToggle () range
 
 endfunction    " ----------  end of function Latex_CommentToggle ----------
 "
+"------------------------------------------------------------------------------
+"  === Templates API ===   {{{1
+"------------------------------------------------------------------------------
+"
+"------------------------------------------------------------------------------
+"  Latex_SetMapLeader   {{{2
+"------------------------------------------------------------------------------
+function! Latex_SetMapLeader ()
+	if exists ( 'g:Latex_MapLeader' )
+		call mmtemplates#core#SetMapleader ( g:Latex_MapLeader )
+	endif
+endfunction    " ----------  end of function Latex_SetMapLeader  ----------
+"
+"------------------------------------------------------------------------------
+"  Latex_ResetMapLeader   {{{2
+"------------------------------------------------------------------------------
+function! Latex_ResetMapLeader ()
+	if exists ( 'g:Latex_MapLeader' )
+		call mmtemplates#core#ResetMapleader ()
+	endif
+endfunction    " ----------  end of function Latex_ResetMapLeader  ----------
+" }}}2
+"
 "===  FUNCTION  ================================================================
 "          NAME:  Latex_RereadTemplates     {{{1
 "   DESCRIPTION:  Reread the templates. Also set the character which starts
@@ -464,7 +479,7 @@ endfunction    " ----------  end of function Latex_CommentToggle ----------
 "    PARAMETERS:  -
 "       RETURNS:
 "===============================================================================
-function! g:Latex_RereadTemplates ( displaymsg )
+function! Latex_RereadTemplates ( displaymsg )
 	"
 	"-------------------------------------------------------------------------------
 	" SETUP TEMPLATE LIBRARY
@@ -502,20 +517,22 @@ function! g:Latex_RereadTemplates ( displaymsg )
 		"-------------------------------------------------------------------------------
 		" handle local template files
 		"-------------------------------------------------------------------------------
-		if finddir( s:Latex_LocalTemplateDir ) == ''
+		let templ_dir = fnamemodify( s:Latex_GlobalTemplateFile, ":p:h" ).'/'
+		"
+		if finddir( templ_dir ) == ''
 			" try to create a local template directory
 			if exists("*mkdir")
 				try
-					call mkdir( s:Latex_LocalTemplateDir, "p" )
+					call mkdir( templ_dir, "p" )
 				catch /.*/
 				endtry
 			endif
 		endif
 
-		if isdirectory( s:Latex_LocalTemplateDir ) && !filereadable( s:Latex_LocalTemplateFile )
+		if isdirectory( templ_dir ) && !filereadable( s:Latex_LocalTemplateFile )
 			" write a default local template file
 			let template	= [	]
-			let sample_template_file	= fnamemodify( s:Latex_GlobalTemplateDir, ':h' ).'/rc/sample_template_file'
+			let sample_template_file	= s:plugin_dir.'/latex-support/rc/sample_template_file'
 			if filereadable( sample_template_file )
 				for line in readfile( sample_template_file )
 					call add( template, line )
@@ -768,7 +785,7 @@ function! Latex_JumpForward ()
 	else
 		" try to jump behind parenthesis or strings
 		call search( "[\]})\"'`]", 'W' )
-		normal l
+		normal! l
 	endif
 	return ''
 endfunction    " ----------  end of function Latex_JumpForward  ----------
@@ -798,7 +815,7 @@ function! Latex_CodeSnippet(mode)
         "
         let linesread= line("$")-linesread-1
         if linesread>=0 && match( l:snippetfile, '\.\(ni\|noindent\)$' ) < 0
-          silent exe "normal =".linesread."+"
+          silent exe "normal! =".linesread."+"
         endif
       endif
     endif
@@ -999,8 +1016,8 @@ function! s:CreateAdditionalMaps ()
 	 noremap  <buffer>  <silent>  <LocalLeader>ht         :call Latex_texdoc()<CR>
 	inoremap  <buffer>  <silent>  <LocalLeader>ht    <C-C>:call Latex_texdoc()<CR>
 	"
-	nmap    <buffer>  <silent>  <C-j>    i<C-R>=Latex_JumpForward()<CR>
-	imap    <buffer>  <silent>  <C-j>     <C-R>=Latex_JumpForward()<CR>
+	nnoremap    <buffer>  <silent>  <C-j>    i<C-R>=Latex_JumpForward()<CR>
+	inoremap    <buffer>  <silent>  <C-j>     <C-R>=Latex_JumpForward()<CR>
 	"
 	"-------------------------------------------------------------------------------
 	" settings - reset local leader
@@ -1045,14 +1062,15 @@ function! Latex_Settings ()
 	let txt = txt.'                  project :  "'.mmtemplates#core#ExpandText( g:Latex_Templates, '|PROJECT|'     )."\"\n"
 	let txt = txt.'               typesetter :  "'.s:Latex_TypesetterCall[s:Latex_Typesetter]."\"\n"
 	let txt = txt.'      plugin installation :  "'.s:installation."\"\n"
+	let txt = txt.'    using template engine :  version '.g:Templates_Version." by Wolfgang Mehner\n"
  	let txt = txt.'   code snippet directory :  "'.s:Latex_CodeSnippets."\"\n"
 	if s:installation == 'system'
-		let txt = txt.'global template directory :  "'.s:Latex_GlobalTemplateDir."\"\n"
+		let txt = txt.'     global template file :  "'.s:Latex_GlobalTemplateFile."\"\n"
 		if filereadable( s:Latex_LocalTemplateFile )
-			let txt = txt.' local template directory :  "'.s:Latex_LocalTemplateDir."\"\n"
+			let txt = txt.'      local template file :  "'.s:Latex_LocalTemplateFile."\"\n"
 		endif
 	else
-		let txt = txt.' local template directory :  "'.s:Latex_LocalTemplateDir."\"\n"
+		let txt = txt.'      local template file :  "'.s:Latex_LocalTemplateFile."\"\n"
 	endif
 	" ----- dictionaries ------------------------
   if !empty(g:Latex_Dictionary_File)
@@ -1086,7 +1104,7 @@ function! Latex_CreateGuiMenus ()
 		amenu   <silent> 40.1000 &Tools.-SEP100- :
 		amenu   <silent> 40.1110 &Tools.Unload\ Latex\ Support :call Latex_RemoveGuiMenus()<CR>
 		"
-		call g:Latex_RereadTemplates('no')
+		call Latex_RereadTemplates('no')
 		call s:InitMenus ()
 		"
 		let s:Latex_MenuVisible = 'yes'
@@ -1446,7 +1464,7 @@ function! Latex_Tabbing()
 	let zz	= s:repeat_string( row, Rows, zz )
 	let zz	.= "\\end{tabbing}\n\%\%----- TABBING :  end  ----------\n"
 	put =zz
-	silent exe "normal ".Rows."k"
+	silent exe "normal! ".Rows."k"
 endfunction    " ----------  end of function Latex_Tabbing  ----------
 "
 "------------------------------------------------------------------------------
@@ -1498,7 +1516,7 @@ function! Latex_Tabular()
 	let zz	.= "\\end{tabular}\\\\\n"
 	let zz	.= "\%\%----- TABULAR :  end  ----------\n"
 	put =zz
-	silent exe "normal ".Rows."k"
+	silent exe "normal! ".Rows."k"
 endfunction    " ----------  end of function Latex_Tabular  ----------
 "
 "------------------------------------------------------------------------------
@@ -1557,8 +1575,8 @@ if has( 'autocmd' )
         \ endif |
         \ if &filetype == 'tex' |
         \   if ! exists( 'g:Latex_Templates' ) |
-        \     if s:Latex_LoadMenus == 'yes' | call Latex_CreateGuiMenus ()        |
-        \     else                          | call g:Latex_RereadTemplates ('no') |
+        \     if s:Latex_LoadMenus == 'yes' | call Latex_CreateGuiMenus ()      |
+        \     else                          | call Latex_RereadTemplates ('no') |
         \     endif |
         \   endif |
         \   call s:CreateAdditionalMaps () |
